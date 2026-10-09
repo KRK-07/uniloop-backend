@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/borrow-requests")
-@CrossOrigin(origins = "http://localhost:5173")
+
 public class BorrowRequestController {
 
     private final BorrowRequestRepository borrowRequestRepository;
