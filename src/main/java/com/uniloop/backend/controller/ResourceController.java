@@ -1,3 +1,4 @@
+
 package com.uniloop.backend.controller;
 
 import com.uniloop.backend.entity.Resource;
@@ -8,7 +9,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/resources")
-
 public class ResourceController {
 
     private final ResourceRepository resourceRepository;
@@ -25,5 +25,19 @@ public class ResourceController {
     @GetMapping
     public List<Resource> getAllResources() {
         return resourceRepository.findAll();
+    }
+
+    @PutMapping("/{id}")
+    public Resource updateResource(
+            @PathVariable Long id,
+            @RequestBody Resource updatedResource) {
+
+        Resource resource = resourceRepository.findById(id)
+                .orElseThrow(() ->
+                        new RuntimeException("Resource not found"));
+
+        resource.setOwnerEmail(updatedResource.getOwnerEmail());
+
+        return resourceRepository.save(resource);
     }
 }
