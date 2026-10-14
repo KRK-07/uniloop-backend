@@ -1,22 +1,19 @@
-
 package com.uniloop.backend.service;
 
+import com.resend.Resend;
+import com.resend.core.exception.ResendException;
+import com.resend.services.emails.model.CreateEmailOptions;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    @Value("${RESEND_API_KEY:}")
+    private String apiKey;
 
-    @Value("${MAIL_USERNAME:}")
+    @Value("${MAIL_FROM:onboarding@resend.dev}")
     private String senderEmail;
-
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-    }
 
     public void sendBorrowRequestUpdate(
             String recipientEmail,
@@ -33,29 +30,49 @@ public class EmailService {
 
         if ("APPROVED".equalsIgnoreCase(status)) {
             subject = "UniLoop: Your borrow request was approved";
-            message = "Great news!\n\nYour borrow request for \""
+            message = "Great news! Your borrow request for \""
                     + resourceTitle
-                    + "\" has been approved by the resource owner.\n\n"
-                    + "Please coordinate with the owner to collect it.\n\n"
+                    + "\" has been approved by the resource owner. "
+                    + "Please coordinate with the owner to collect it. "
                     + "— UniLoop Team";
         } else if ("REJECTED".equalsIgnoreCase(status)) {
             subject = "UniLoop: Your borrow request was rejected";
-            message = "Hello!\n\nYour borrow request for \""
+            message = "Your borrow request for \""
                     + resourceTitle
-                    + "\" has been rejected by the resource owner.\n\n"
-                    + "You can browse UniLoop for other available resources.\n\n"
+                    + "\" has been rejected by the resource owner. "
+                    + "You can browse UniLoop for other available resources. "
                     + "— UniLoop Team";
         } else {
             throw new IllegalArgumentException(
                     "Unsupported request status: " + status);
         }
 
-        SimpleMailMessage email = new SimpleMailMessage();
-        email.setFrom(senderEmail);
-        email.setTo(recipientEmail);
-        email.setSubject(subject);
-        email.setText(message);
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new IllegalStateException(
+                    "RESEND_API_KEY is not configured");
+        }
 
-        mailSender.send(email);
+        try {
+            Resend resend = new Resend(apiKey);
+
+            CreateEmailOptions email = CreateEmailOptions.builder()
+                    .from(senderEmail)
+                    .to(recipientEmail)
+                    .subject(subject)
+                    .text(message)
+                    .build();
+
+            resend.emails().send(email);
+
+            System.out.println(
+                    "UniLoop email submitted to Resend for "
+                    + recipientEmail);
+
+        } catch (ResendException e) {
+            System.err.println(
+                    "Failed to send UniLoop email: " + e.getMessage());
+            throw new RuntimeException(
+                    "Email delivery request failed", e);
+        }
     }
 }
