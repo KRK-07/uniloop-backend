@@ -18,12 +18,15 @@ public class Resource {
 
     private String ownerName;
 
+    private String ownerEmail;
+
     private boolean available = true;
 
     public Resource() {
     }
 
-    public Resource(String title, String description, String category, String ownerName) {
+    public Resource(String title, String description,
+                    String category, String ownerName) {
         this.title = title;
         this.description = description;
         this.category = category;
@@ -71,11 +74,19 @@ public class Resource {
         this.ownerName = ownerName;
     }
 
+    public String getOwnerEmail() {
+        return ownerEmail;
+    }
+
+    public void setOwnerEmail(String ownerEmail) {
+        this.ownerEmail = ownerEmail;
+    }
+
     public boolean isAvailable() {
         return available;
     }
 
     public void setAvailable(boolean available) {
         this.available = available;
-    }
+    }   
 }
