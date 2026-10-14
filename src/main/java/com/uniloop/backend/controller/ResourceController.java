@@ -27,17 +27,8 @@ public class ResourceController {
         return resourceRepository.findAll();
     }
 
-    @PutMapping("/{id}")
-    public Resource updateResource(
-            @PathVariable Long id,
-            @RequestBody Resource updatedResource) {
-
-        Resource resource = resourceRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Resource not found"));
-
-        resource.setOwnerEmail(updatedResource.getOwnerEmail());
-
-        return resourceRepository.save(resource);
+    @DeleteMapping("/{id}")
+    public void deleteResource(@PathVariable Long id) {
+        resourceRepository.deleteById(id);
     }
 }
